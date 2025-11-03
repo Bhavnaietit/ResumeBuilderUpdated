@@ -1,0 +1,218 @@
+import React, { useEffect, useRef, useState } from 'react'
+import { LuUser, LuGithub, LuMail, LuPhone, LuRss, LuMapPinHouse } from 'react-icons/lu';
+import { RiLinkedinLine } from 'react-icons/ri';
+import LanguageSection from '../ResumeSelections/LanguageSection';
+import ContactInfo from '../ResumeSelections/ContactInfo';
+import EducationInfo from '../ResumeSelections/EducationInfo';
+import { formatYearMonth } from '../../utils/helper';
+import WorkExperienceInfo from '../ResumeSelections/WorkExperienceInfo';
+import SkillSection from '../ResumeSelections/SkillSection';
+import ProjectInfo from '../ResumeSelections/ProjectInfo';
+import CertificationInfo from '../ResumeSelections/CertificationInfo';
+const DEFAULT_THEME = ["#EBFDFF","#AIF$FD","#CEFAFE","#00BBDB","#4A5565"];
+const Title = ({ text, color }) => {
+    return (<div className='relative w-fit mb-2.5'>
+        <span className='absolute bottom-0 left-0 w-full h-2'
+        style={{backgroundColor:color}}>
+        </span>
+        <h2 className={`relative text-sm font-bold `}>{text}</h2>
+    </div>)
+}
+const TemplateOne = ({ resumeData, colorPalette, containerWidth }) => {
+	const themeColors = colorPalette.length > 0 ? colorPalette : DEFAULT_THEME;
+	const resumeRef = useRef(null);
+	const [baseWidth, setBaseWidth] = useState(800);
+	const [scale, setScale] = useState(1);
+
+	useEffect(() => {
+		const actualBaseWidth = resumeRef.current.offsetWidth;
+		setBaseWidth(actualBaseWidth);
+		setScale(containerWidth / baseWidth);
+	}, [containerWidth]);
+	// console.log(resumeData.workExperience);
+	return (
+		<div
+			ref={resumeRef}
+			className="p-3 bg-white"
+			style={{
+				transform: containerWidth > 0 ? `scale(${scale})` : "none",
+				transformOrigin: "top left",
+				width: containerWidth > 0 ? `${baseWidth}px` : "auto",
+				height: "auto",
+			}}>
+			<div className="grid grid-cols-12 gap-8">
+				<div
+					className="col-span-4 py-10"
+					style={{ backgroundColor: themeColors[0] }}>
+					<div className="flex flex-col items-center px-2">
+						<div
+							className="w-[100px] h-[100px] max-w-[110px] max-h-[110px] rounded-full items-center justify-center"
+							style={{ backgroundColor: themeColors[1] }}>
+							{resumeData.profileInfo.profilePreviewUrl ? (
+								<img
+									src={resumeData.profileInfo.profilePreviewUrl}
+									className="w-[90px] h-[90px] rounded-full"></img>
+							) : (
+								<div
+									className="w-[90px] h-[90px] flex items-center justify-center text-5xl rounded-full"
+									style={{ color: themeColors[4] }}>
+									<LuUser></LuUser>
+								</div>
+							)}
+						</div>
+						<h2 className="text-xl font-bold mt-3">
+							{resumeData.profileInfo.fullName}
+						</h2>
+						<p className="text-sm text-center">
+							{resumeData.profileInfo.designation}
+						</p>
+					</div>
+					<div className="m-6 ">
+						<div className="flex flex-col pb-2  gap-4">
+							<ContactInfo
+								icon={<LuMapPinHouse />}
+								iconBG={themeColors[2]}
+								value={resumeData.contactInfo.location}
+							/>
+							<ContactInfo
+								icon={<LuMail />}
+								iconBG={themeColors[2]}
+								value={resumeData.contactInfo.email}
+							/>
+							<ContactInfo
+								icon={<LuPhone />}
+								iconBG={themeColors[2]}
+								value={resumeData.contactInfo.phone}
+							/>
+							{resumeData.contactInfo.linkedin && (
+								<ContactInfo
+									icon={<RiLinkedinLine />}
+									iconBG={themeColors[2]}
+									value={resumeData.contactInfo.linkedin}
+								/>
+							)}
+							{resumeData.contactInfo.github && (
+								<ContactInfo
+									icon={<LuGithub />}
+									iconBG={themeColors[2]}
+									value={resumeData.contactInfo.github}
+								/>
+							)}
+
+							<ContactInfo
+								icon={<LuRss />}
+								iconBG={themeColors[2]}
+								value={resumeData.contactInfo.website}
+							/>
+						</div>
+						{/* <div className="text-lg">
+							<Title text="Education" color={themeColors[1]}></Title>
+							{resumeData.educations.map((data, index) => (
+								<EducationInfo
+									key={`education_${index}`}
+									degree={data.degree}
+									institution={data.institution}
+									duration={`${formatYearMonth(
+										data.startDate
+									)}-${formatYearMonth(data.endDate)}`}></EducationInfo>
+							))}
+						</div> */}
+
+						<div className="flex justify-start gap-2  flex-col">
+							<Title text="langauges" color={themeColors[1]}></Title>
+							<LanguageSection
+								langauges={resumeData.langauges}
+								accentColor={themeColors[3]}
+								bgColor={themeColors[2]}></LanguageSection>
+						</div>
+					</div>
+				</div>
+				<div className="col-span-8 pt-10 mr-10 pb-5">
+					<div>
+						<Title text="Professional Summary" color={themeColors[1]}></Title>
+						<p className="text-sm font-medium">
+							{resumeData.profileInfo.summary}
+						</p>
+					</div>
+					{/* work */}
+					<div className="mt-4">
+						<Title text="Work Experience" color={themeColors[1]}></Title>
+						{resumeData.workExperience.map((data, index) => (
+							<WorkExperienceInfo
+								key={`work_${index}`}
+								company={data.company}
+								role={data.role}
+								durationColor={themeColors[4]}
+								duration={`${formatYearMonth(data.startDate)}-${formatYearMonth(
+									data.endDate
+								)}`}
+								description={data.description}></WorkExperienceInfo>
+						))}
+					</div>
+					{/* project */}
+					<div className="mt-4">
+						<Title text="Projects" color={themeColors[1]}></Title>
+						{resumeData.projects.map((data, index) => (
+							<ProjectInfo
+								key={`project_${index}`}
+								title={data.title}
+								githubLink={data.github}
+								liveDemoUrl={data.liveDemo}
+								bgColor={themeColors[4]}
+								duration={`${formatYearMonth(data.startDate)}-${formatYearMonth(
+									data.endDate
+								)}`}
+								description={data.description}></ProjectInfo>
+						))}
+					</div>
+					{/* skill */}
+					<div className="mt-4">
+						<Title text="Skills" color={themeColors[1]}></Title>
+
+						<SkillSection
+							skills={resumeData.skills}
+							bgColor={themeColors[2]}
+							accentColor={themeColors[3]}></SkillSection>
+					</div>
+					{/* certificate */}
+					<div className="mt-4">
+						<Title text="Certifiactions" color={themeColors[1]}></Title>
+						{resumeData.certifications.map((data, index) => (
+							<CertificationInfo
+								key={`cert_${index}`}
+								title={data.title}
+								issuer={data.issuer}
+								bgColor={themeColors[2]}
+								year={data.year}></CertificationInfo>
+						))}
+					</div>
+
+					{/* interests */}
+
+					{resumeData.interests.length > 0 && resumeData.interests[0] != "" && (
+						<div className="mt-4">
+							<Title text="Interests" color={themeColors[1]}></Title>
+							<div className="flex justify-start gap-4">
+								{resumeData.interests.map((interest, index) => {
+									if (!interest) {
+										return null;
+									}
+									return (
+										<div
+											key={`interest_${index}`}
+											className="text-[10px] font-medium py-1 px-3 rounded-lg"
+											style={{ backgroundColor: themeColors[2] }}>
+											{interest}
+										</div>
+									);
+								})}
+							</div>
+						</div>
+					)}
+				</div>
+			</div>
+		</div>
+	);
+};
+
+export default TemplateOne

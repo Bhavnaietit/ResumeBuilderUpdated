@@ -1,0 +1,131 @@
+import React, { useEffect, useState, useRef } from "react";
+import {
+	DUMMY_RESUME_DATA,
+	resumeTemplates,
+	themeColorPalette,
+} from "../../utils/data";
+import { LuCircleCheckBig } from "react-icons/lu";
+import Tabs from "../../components/Tabs";
+import TemplateCard from "../../components/cards/TemplateCard";
+import RenderResume from "../../components/ResumeTemplates/RenderResume";
+
+const TAB_DATA = [{ label: "Templates" }, { label: "Color Palettes" }];
+
+const ColorPalette = ({ colors, isSelected, onSelect }) => {
+
+	return (
+		<div
+			className={`h-28 bg-purple-50 flex rounded-lg overflow-hidden border-2 border-purple-200
+				${isSelected ? "border-purple-500 border-2" : ""}
+			`}>
+			{colors.map((color, index) => (
+				<div
+					key={`${color}_${index}`}
+					className="flex-1"
+					style={{ backgroundColor: colors[index] }}
+					onClick={onSelect}></div>
+			))}
+		</div>
+	);
+};
+
+const ThemeSelector = ({
+	selectTheme,
+	setSelectedTheme,
+	resumeData,
+	onClose,
+}) => {
+	const resumeRef = useRef(null);
+	const [baseWidth, setBaseWidth] = useState(800);
+	const [taValue, setTaValue] = useState("Templates");
+	const [selectedColorPalette, setSelectedColorPalette] = useState({
+		colors: selectTheme?.colorPalette,
+		index: -1,
+	});
+	const [selectedTemplate, setSelectedTemplate] = useState({
+		theme: selectTheme?.theme || "",
+		index: -1,
+	});
+
+	// handle theme change
+	const handleThemeSelection = () => {
+		console.log(selectedColorPalette,selectedTemplate)
+		setSelectedTheme({
+			colorPalette: selectedColorPalette?.colors,
+			theme: selectedTemplate?.theme,
+		});
+		onClose();
+	};
+	const updateBaseWidth = () => {
+		if (resumeRef.current) {
+			setBaseWidth(resumeRef.current.offsetWidth);
+		}
+	};
+
+	useEffect(() => {
+		updateBaseWidth();
+		window.addEventListener("resize", updateBaseWidth);
+		return () => {
+			window.removeEventListener("resize", updateBaseWidth);
+		};
+	}, []);
+
+	return (
+		<div className="container h-[600px] px-2 md:px-4">
+			<div className="flex items-center justify-between mb-5 mt-2">
+				<Tabs
+					tabs={TAB_DATA}
+					activeTab={taValue}
+					setActiveTab={setTaValue}></Tabs>
+				<button
+					className="btn-small-light"
+					onClick={() => handleThemeSelection()}>
+					<LuCircleCheckBig className="text-[16px]">Done</LuCircleCheckBig>
+				</button>
+			</div>
+			<div className="grid grid-cols-12 gap-5">
+				<div className="col-span-12 md:col-span-5 bg-white">
+					<div className="grid grid-cols-2 gap-5 p-2 max-h-[80vh] overflow-scroll custom-scrollbar">
+						{taValue === "Templates" &&
+							resumeTemplates.map((template, index) => {
+								return (
+									<TemplateCard
+										key={`template_${index}`}
+										thumbnailImg={template.thumbnailImg}
+										isSelected={selectedTemplate?.index === index}
+										onSelect={() =>
+											setSelectedTemplate({ theme: template.id, index })
+										}></TemplateCard>
+								);
+							})}
+						{taValue === "Color Palettes" &&
+							themeColorPalette.themeOne.map((colors, index) => {
+								// console.log(selectedColorPalette);
+								return (
+									<ColorPalette
+										key={index}
+										colors={colors}
+										isSelected={selectedColorPalette.index === index}
+										onSelect={() =>
+											setSelectedColorPalette({ colors, index })
+										}></ColorPalette>
+								);
+							})}
+					</div>
+				</div>
+
+				<div
+					className="col-span-12 md:col-span-7 bg-white -mt-3"
+					ref={resumeRef}>
+					<RenderResume
+						templateId={selectedTemplate?.theme || ""}
+						resumeData={resumeData || DUMMY_RESUME_DATA}
+						containerWidth={baseWidth}
+						colorPalette={selectedColorPalette?.colors || {}}></RenderResume>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+export default ThemeSelector;
